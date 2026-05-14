@@ -72,55 +72,43 @@ footer{text-align:center;font-size:0.72rem;color:var(--grigio-medio);margin-top:
 <span id="statusText">Connessione...</span>
 </div>
 <button class="refresh-btn" onclick="loadAll()">↻ Aggiorna</button>
-
 <div class="big-grid" id="bigGrid">
 <div class="metric-card celeste visible"><div class="metric-label">Skinem Vendite</div><div class="skeleton"></div></div>
 <div class="metric-card celeste visible"><div class="metric-label">SkinNate Vendite</div><div class="skeleton"></div></div>
 <div class="metric-card netto-pos visible"><div class="metric-label">Totale Incassi</div><div class="skeleton"></div></div>
 </div>
-
 <div class="small-grid" id="smallGrid">
 <div class="metric-card costi visible"><div class="metric-label">Costi Fissi</div><div class="skeleton"></div></div>
 <div class="metric-card arancio visible"><div class="metric-label">Break-Even</div><div class="skeleton"></div></div>
 <div class="metric-card netto-pos visible"><div class="metric-label">Flusso Netto</div><div class="skeleton"></div></div>
 <div class="metric-card arancio visible"><div class="metric-label">Margine Lordo</div><div class="skeleton"></div></div>
 </div>
-
 <div class="section" id="venditeSection">
 <div class="section-title">Vendite per Cliente</div>
 <div class="mese-tabs" id="meseTabs"></div>
 <div id="venditeTable"><div class="skeleton"></div><div class="skeleton"></div></div>
 </div>
-
-<footer>Skinem Group · Compro a 1 vendo a 3 · Auto-refresh ogni 5 min</footer>
+<footer>Skinem Group · Auto-refresh ogni 5 min</footer>
 </div>
 <script>
 const COSTI_ID='1fjh4ZT7SxtPn0D3ojJ1DptWR2IsYc4Y9kECUgFwzYCQ';
 const VENDITE_ID='19011LKl-DC3sQTITIigeKGadrl1HhZJPyioWYBoeDEI';
 const MESI=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
-// Compro a 1 vendo a 3 → margine netto = 2/3 = 66.7%
-// Break-even = costi fissi / (2/3) = costi fissi * 1.5
 const MARGINE=2/3;
 let meseAttivo='Maggio';
 let datiVendite={};
 let totaleCosti=0;
-
 function formatEur(n){return'€ '+n.toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:0})}
 function parseGSheet(text){const s=text.indexOf('{');const e=text.lastIndexOf('}');return JSON.parse(text.substring(s,e+1))}
-
 async function fetchSheet(id,sheet){
   const url=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
   const res=await fetch(url);const text=await res.text();return parseGSheet(text);
 }
-
 function renderMese(mese){
   meseAttivo=mese;
   document.querySelectorAll('.mese-tab').forEach(t=>t.classList.toggle('active',t.dataset.mese===mese));
   const righe=datiVendite[mese]||[];
-  if(righe.length===0){
-    document.getElementById('venditeTable').innerHTML='<p style="color:#888;font-size:0.9rem;text-align:center;padding:20px">Nessuna vendita per '+mese+'</p>';
-    return;
-  }
+  if(righe.length===0){document.getElementById('venditeTable').innerHTML='<p style="color:#888;font-size:0.9rem;text-align:center;padding:20px">Nessuna vendita per '+mese+'</p>';return;}
   const maxTot=Math.max(...righe.map(r=>r.skinem+r.skinnate));
   let html=`<table><thead><tr><th>Cliente</th><th>Skinem</th><th>SkinNate</th><th>Totale</th></tr></thead><tbody>`;
   righe.forEach(r=>{
@@ -131,7 +119,6 @@ function renderMese(mese){
   html+=`</tbody></table>`;
   document.getElementById('venditeTable').innerHTML=html;
 }
-
 function aggiornaMetriche(){
   let totSkinem=0,totSkinnate=0;
   Object.values(datiVendite).forEach(righe=>{righe.forEach(r=>{totSkinem+=r.skinem;totSkinnate+=r.skinnate})});
@@ -140,19 +127,16 @@ function aggiornaMetriche(){
   const breakEven=totaleCosti/MARGINE;
   const margine=totVendite*MARGINE;
   const nettoClass=netto>=0?'verde':'rosso';
-
   document.getElementById('bigGrid').innerHTML=`
 <div class="metric-card celeste visible"><div class="metric-label">Skinem Vendite</div><div class="metric-value">${formatEur(totSkinem)}</div><div class="metric-sub">Ingrosso estetiste</div></div>
 <div class="metric-card celeste visible"><div class="metric-label">SkinNate Vendite</div><div class="metric-value">${formatEur(totSkinnate)}</div><div class="metric-sub">Retail</div></div>
 <div class="metric-card ${netto>=0?'netto-pos':'netto-neg'} visible"><div class="metric-label">Totale Incassi</div><div class="metric-value ${nettoClass}">${formatEur(totVendite)}</div><div class="metric-sub">Tutti i mesi</div></div>`;
-
   document.getElementById('smallGrid').innerHTML=`
 <div class="metric-card costi visible"><div class="metric-label">Costi Fissi</div><div class="metric-value rosso">${formatEur(totaleCosti)}</div><div class="metric-sub">/mese</div></div>
-<div class="metric-card arancio visible"><div class="metric-label">Break-Even</div><div class="metric-value arancio">${formatEur(breakEven)}</div><div class="metric-sub">Vendite minime</div></div>
+<div class="metric-card arancio visible"><div class="metric-label">Break-Even</div><div class="metric-value arancio">${formatEur(breakEven)}</div><div class="metric-sub">Vendite minime/mese</div></div>
 <div class="metric-card ${netto>=0?'netto-pos':'netto-neg'} visible"><div class="metric-label">Flusso Netto</div><div class="metric-value ${nettoClass}">${formatEur(netto)}</div><div class="metric-sub">Incassi – Costi</div></div>
 <div class="metric-card arancio visible"><div class="metric-label">Margine Lordo</div><div class="metric-value arancio">${formatEur(margine)}</div><div class="metric-sub">66.7% su vendite</div></div>`;
 }
-
 async function loadAll(){
   const dot=document.getElementById('statusDot');
   const statusText=document.getElementById('statusText');
@@ -177,10 +161,12 @@ async function loadAll(){
           const skinnate=parseFloat(row.c[2]?.v)||0;
           if(cliente&&(skinem>0||skinnate>0))righe.push({cliente:String(cliente),skinem,skinnate});
         }
-    if(righe.length>0){
-  datiVendite[mese]=righe;
-  mesiDisponibili.push(mese);
-}
+        if(righe.length>0){
+          datiVendite[mese]=righe;
+          mesiDisponibili.push(mese);
+        }
+      }catch(e){}
+    }
     const tabsHtml=mesiDisponibili.map(m=>`<button class="mese-tab${m===meseAttivo?' active':''}" data-mese="${m}" onclick="renderMese('${m}')">${m}</button>`).join('');
     document.getElementById('meseTabs').innerHTML=tabsHtml;
     aggiornaMetriche();
