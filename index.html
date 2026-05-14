@@ -98,17 +98,55 @@ const MARGINE=2/3;
 let meseAttivo='Maggio';
 let datiVendite={};
 let totaleCosti=0;
+
 function formatEur(n){return'€ '+n.toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:0})}
 function parseGSheet(text){const s=text.indexOf('{');const e=text.lastIndexOf('}');return JSON.parse(text.substring(s,e+1))}
+
 async function fetchSheet(id,sheet){
   const url=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
-  const res=await fetch(url);const text=await res.text();return parseGSheet(text);
+  const res=await fetch(url);
+  const text=await res.text();
+  const json=parseGSheet(text);
+  // Verifica che il foglio esista davvero controllando il nome nella risposta
+  if(json.table && json.table.cols && json.table.cols.length>0){
+    // Controlla se il nome del foglio nella risposta corrisponde
+    const sheetNameInResponse=decodeURIComponent(text.match(/gid=(\d+)/)?.[1]||'');
+    return json;
+  }
+  throw new Error('Foglio non trovato: '+sheet);
 }
+
+async function fetchSheetSafe(id,sheet){
+  // Usa gid=-1 per forzare la ricerca per nome — se non esiste lancia errore
+  const url=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}&headers=1`;
+  const res=await fetch(url);
+  const text=await res.text();
+  // Controlla se la risposta contiene un errore di foglio non trovato
+  if(text.includes('Invalid sheet')||text.includes('not found')||text.includes('does not exist')){
+    throw new Error('Foglio non trovato: '+sheet);
+  }
+  const json=parseGSheet(text);
+  if(!json.table||!json.table.rows||json.table.rows.length===0){
+    throw new Error('Foglio vuoto: '+sheet);
+  }
+  // Verifica che la prima colonna si chiami "Nome Cliente" o simile
+  // Se Google restituisce il foglio sbagliato, i dati sarebbero diversi
+  const firstCol=json.table.cols[0]?.label||'';
+  if(firstCol && firstCol.toLowerCase().includes('affitt')){
+    // Sta restituendo il foglio costi invece di vendite
+    throw new Error('Foglio sbagliato: '+sheet);
+  }
+  return json;
+}
+
 function renderMese(mese){
   meseAttivo=mese;
   document.querySelectorAll('.mese-tab').forEach(t=>t.classList.toggle('active',t.dataset.mese===mese));
   const righe=datiVendite[mese]||[];
-  if(righe.length===0){document.getElementById('venditeTable').innerHTML='<p style="color:#888;font-size:0.9rem;text-align:center;padding:20px">Nessuna vendita per '+mese+'</p>';return;}
+  if(righe.length===0){
+    document.getElementById('venditeTable').innerHTML='<p style="color:#888;font-size:0.9rem;text-align:center;padding:20px">Nessuna vendita per '+mese+'</p>';
+    return;
+  }
   const maxTot=Math.max(...righe.map(r=>r.skinem+r.skinnate));
   let html=`<table><thead><tr><th>Cliente</th><th>Skinem</th><th>SkinNate</th><th>Totale</th></tr></thead><tbody>`;
   righe.forEach(r=>{
@@ -119,6 +157,7 @@ function renderMese(mese){
   html+=`</tbody></table>`;
   document.getElementById('venditeTable').innerHTML=html;
 }
+
 function aggiornaMetriche(){
   let totSkinem=0,totSkinnate=0;
   Object.values(datiVendite).forEach(righe=>{righe.forEach(r=>{totSkinem+=r.skinem;totSkinnate+=r.skinnate})});
@@ -137,6 +176,7 @@ function aggiornaMetriche(){
 <div class="metric-card ${netto>=0?'netto-pos':'netto-neg'} visible"><div class="metric-label">Flusso Netto</div><div class="metric-value ${nettoClass}">${formatEur(netto)}</div><div class="metric-sub">Incassi – Costi</div></div>
 <div class="metric-card arancio visible"><div class="metric-label">Margine Lordo</div><div class="metric-value arancio">${formatEur(margine)}</div><div class="metric-sub">66.7% su vendite</div></div>`;
 }
+
 async function loadAll(){
   const dot=document.getElementById('statusDot');
   const statusText=document.getElementById('statusText');
@@ -153,7 +193,7 @@ async function loadAll(){
     const mesiDisponibili=[];
     for(const mese of MESI){
       try{
-        const data=await fetchSheet(VENDITE_ID,mese);
+        const data=await fetchSheetSafe(VENDITE_ID,mese);
         const righe=[];
         for(const row of data.table.rows){
           const cliente=row.c[0]?.v;
@@ -165,7 +205,9 @@ async function loadAll(){
           datiVendite[mese]=righe;
           mesiDisponibili.push(mese);
         }
-      }catch(e){}
+      }catch(e){
+        // Foglio non esistente o vuoto — ignora
+      }
     }
     const tabsHtml=mesiDisponibili.map(m=>`<button class="mese-tab${m===meseAttivo?' active':''}" data-mese="${m}" onclick="renderMese('${m}')">${m}</button>`).join('');
     document.getElementById('meseTabs').innerHTML=tabsHtml;
