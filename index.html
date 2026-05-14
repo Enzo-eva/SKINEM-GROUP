@@ -7,7 +7,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--celeste:#b8dde8;--celeste-dark:#7fb3cc;--grigio:#4a4a4a;--grigio-medio:#888;--bg:#f2f7fa;--bianco:#ffffff;--verde:#27ae60;--rosso:#e74c3c;--arancio:#f39c12}
+:root{--celeste:#b8dde8;--celeste-dark:#7fb3cc;--celeste-light:#e8f3f7;--grigio:#4a4a4a;--grigio-scuro:#2a2a2a;--grigio-medio:#888;--grigio-chiaro:#f0f0f0;--bg:#f2f7fa;--bianco:#ffffff}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--grigio);min-height:100vh;padding:32px 20px}
 .container{max-width:960px;margin:0 auto}
 header{text-align:center;margin-bottom:40px}
@@ -16,46 +16,43 @@ header{text-align:center;margin-bottom:40px}
 .last-update{font-size:0.78rem;color:var(--grigio-medio);margin-top:8px}
 .status-bar{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:28px;font-size:0.85rem;color:var(--grigio-medio)}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--celeste-dark);animation:pulse 2s infinite}
-.dot.ok{background:var(--verde);animation:none}
-.dot.error{background:var(--rosso);animation:none}
+.dot.ok{background:var(--celeste-dark);animation:none}
+.dot.error{background:var(--grigio);animation:none}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 .big-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
 .small-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
-.metric-card{background:var(--bianco);border-radius:10px;padding:22px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);text-align:center;opacity:0;transform:translateY(12px);transition:all 0.4s ease}
+.metric-card{background:var(--bianco);border-radius:10px;padding:22px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);text-align:center;opacity:0;transform:translateY(12px);transition:all 0.4s ease;border-top:3px solid var(--celeste)}
 .metric-card.visible{opacity:1;transform:translateY(0)}
 .metric-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.09);transform:translateY(-3px)}
-.metric-card.costi{border-top:3px solid var(--rosso)}
-.metric-card.netto-pos{border-top:3px solid var(--verde)}
-.metric-card.netto-neg{border-top:3px solid var(--rosso)}
-.metric-card.celeste{border-top:3px solid var(--celeste-dark)}
-.metric-card.arancio{border-top:3px solid var(--arancio)}
+.metric-card.dark{border-top:3px solid var(--grigio)}
+.metric-card.accent{border-top:3px solid var(--celeste-dark)}
 .metric-label{font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--grigio-medio);margin-bottom:8px}
 .metric-value{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--grigio);line-height:1}
-.metric-value.verde{color:var(--verde)}
-.metric-value.rosso{color:var(--rosso)}
-.metric-value.arancio{color:var(--arancio)}
+.metric-value.celeste{color:var(--celeste-dark)}
+.metric-value.scuro{color:var(--grigio-scuro)}
 .metric-sub{font-size:0.7rem;color:var(--grigio-medio);margin-top:6px}
 .section{background:var(--bianco);border-radius:10px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:20px;opacity:0;transform:translateY(12px);transition:all 0.5s ease}
 .section.visible{opacity:1;transform:translateY(0)}
 .section-title{font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--celeste-dark);margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--celeste)}
 .mese-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.mese-tab{padding:6px 16px;border-radius:20px;font-size:0.8rem;font-weight:600;cursor:pointer;border:none;background:#f0f0f0;color:var(--grigio-medio);transition:all 0.2s}
+.mese-tab{padding:6px 16px;border-radius:20px;font-size:0.8rem;font-weight:600;cursor:pointer;border:none;background:var(--grigio-chiaro);color:var(--grigio-medio);transition:all 0.2s}
+.mese-tab:hover{background:var(--celeste-light);color:var(--celeste-dark)}
 .mese-tab.active{background:var(--grigio);color:white}
 table{width:100%;border-collapse:collapse;font-size:0.88rem}
-thead tr{background:#f8f9fa}
-th{padding:10px 12px;text-align:left;font-weight:600;font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--grigio-medio);border-bottom:1px solid #eee}
+thead tr{background:var(--celeste-light)}
+th{padding:10px 12px;text-align:left;font-weight:600;font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--grigio-medio);border-bottom:1px solid var(--celeste)}
 td{padding:11px 12px;border-bottom:1px solid #f5f5f5}
 tr:last-child td{border-bottom:none}
-tr:hover{background:#fafafa}
+tr:hover{background:var(--bg)}
 .amount{font-weight:600;color:var(--grigio)}
-.amount.verde{color:var(--verde)}
+.amount.celeste{color:var(--celeste-dark)}
 .bar-wrap{display:flex;align-items:center;gap:8px}
-.bar{height:4px;border-radius:2px;flex:1;background:#f0f0f0;overflow:hidden}
+.bar{height:4px;border-radius:2px;flex:1;background:var(--grigio-chiaro);overflow:hidden}
 .bar-fill{height:100%;border-radius:2px;background:var(--celeste-dark)}
 .refresh-btn{display:block;margin:0 auto 28px auto;padding:9px 22px;background:var(--grigio);color:white;border:none;border-radius:6px;font-size:0.85rem;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;transition:all 0.2s ease}
-.refresh-btn:hover{background:#2a2a2a;transform:translateY(-2px)}
+.refresh-btn:hover{background:var(--grigio-scuro);transform:translateY(-2px)}
 footer{text-align:center;font-size:0.72rem;color:var(--grigio-medio);margin-top:36px}
-.skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:4px;height:18px;margin:6px 0}
+.skeleton{background:linear-gradient(90deg,var(--grigio-chiaro) 25%,#e8e8e8 50%,var(--grigio-chiaro) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:4px;height:18px;margin:6px 0}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 @media(max-width:700px){.big-grid,.small-grid{grid-template-columns:1fr 1fr}.metric-value{font-size:1.5rem}.logo{font-size:2rem}}
 </style>
@@ -73,15 +70,15 @@ footer{text-align:center;font-size:0.72rem;color:var(--grigio-medio);margin-top:
 </div>
 <button class="refresh-btn" onclick="loadAll()">↻ Aggiorna</button>
 <div class="big-grid" id="bigGrid">
-<div class="metric-card celeste visible"><div class="metric-label">Skinem Vendite</div><div class="skeleton"></div></div>
-<div class="metric-card celeste visible"><div class="metric-label">SkinNate Vendite</div><div class="skeleton"></div></div>
-<div class="metric-card netto-pos visible"><div class="metric-label">Totale Incassi</div><div class="skeleton"></div></div>
+<div class="metric-card visible"><div class="metric-label">Skinem Vendite</div><div class="skeleton"></div></div>
+<div class="metric-card visible"><div class="metric-label">SkinNate Vendite</div><div class="skeleton"></div></div>
+<div class="metric-card accent visible"><div class="metric-label">Totale Incassi</div><div class="skeleton"></div></div>
 </div>
 <div class="small-grid" id="smallGrid">
-<div class="metric-card costi visible"><div class="metric-label">Costi Fissi</div><div class="skeleton"></div></div>
-<div class="metric-card arancio visible"><div class="metric-label">Break-Even</div><div class="skeleton"></div></div>
-<div class="metric-card netto-pos visible"><div class="metric-label">Flusso Netto</div><div class="skeleton"></div></div>
-<div class="metric-card arancio visible"><div class="metric-label">Margine Lordo</div><div class="skeleton"></div></div>
+<div class="metric-card dark visible"><div class="metric-label">Costi Fissi</div><div class="skeleton"></div></div>
+<div class="metric-card visible"><div class="metric-label">Break-Even</div><div class="skeleton"></div></div>
+<div class="metric-card accent visible"><div class="metric-label">Flusso Netto</div><div class="skeleton"></div></div>
+<div class="metric-card visible"><div class="metric-label">Margine Lordo</div><div class="skeleton"></div></div>
 </div>
 <div class="section" id="venditeSection">
 <div class="section-title">Vendite per Cliente</div>
@@ -98,7 +95,8 @@ const MARGINE=2/3;
 let meseAttivo='Maggio';
 let datiVendite={};
 let totaleCosti=0;
-  function formatEur(n){return'€ '+n.toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:0})}
+
+function formatEur(n){return'€ '+n.toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:0})}
 function parseGSheet(text){const s=text.indexOf('{');const e=text.lastIndexOf('}');return JSON.parse(text.substring(s,e+1))}
 
 async function fetchSheet(id,sheet){
@@ -116,7 +114,7 @@ function renderMese(mese){
   righe.forEach(r=>{
     const tot=r.skinem+r.skinnate;
     const perc=maxTot>0?Math.round((tot/maxTot)*100):0;
-    html+=`<tr><td>${r.cliente}</td><td><span class="amount">${formatEur(r.skinem)}</span></td><td><span class="amount">${formatEur(r.skinnate)}</span></td><td><div class="bar-wrap"><span class="amount verde">${formatEur(tot)}</span><div class="bar"><div class="bar-fill" style="width:${perc}%"></div></div></div></td></tr>`;
+    html+=`<tr><td>${r.cliente}</td><td><span class="amount">${formatEur(r.skinem)}</span></td><td><span class="amount">${formatEur(r.skinnate)}</span></td><td><div class="bar-wrap"><span class="amount celeste">${formatEur(tot)}</span><div class="bar"><div class="bar-fill" style="width:${perc}%"></div></div></div></td></tr>`;
   });
   html+=`</tbody></table>`;
   document.getElementById('venditeTable').innerHTML=html;
@@ -129,18 +127,18 @@ function aggiornaMetriche(){
   const netto=totVendite-totaleCosti;
   const breakEven=totaleCosti/MARGINE;
   const margine=totVendite*MARGINE;
-  const nettoClass=netto>=0?'verde':'rosso';
   document.getElementById('bigGrid').innerHTML=`
-<div class="metric-card celeste visible"><div class="metric-label">Skinem Vendite</div><div class="metric-value">${formatEur(totSkinem)}</div><div class="metric-sub">Ingrosso estetiste</div></div>
-<div class="metric-card celeste visible"><div class="metric-label">SkinNate Vendite</div><div class="metric-value">${formatEur(totSkinnate)}</div><div class="metric-sub">Retail</div></div>
-<div class="metric-card ${netto>=0?'netto-pos':'netto-neg'} visible"><div class="metric-label">Totale Incassi</div><div class="metric-value ${nettoClass}">${formatEur(totVendite)}</div><div class="metric-sub">Tutti i mesi</div></div>`;
+<div class="metric-card visible"><div class="metric-label">Skinem Vendite</div><div class="metric-value">${formatEur(totSkinem)}</div><div class="metric-sub">Ingrosso estetiste</div></div>
+<div class="metric-card visible"><div class="metric-label">SkinNate Vendite</div><div class="metric-value">${formatEur(totSkinnate)}</div><div class="metric-sub">Retail</div></div>
+<div class="metric-card accent visible"><div class="metric-label">Totale Incassi</div><div class="metric-value celeste">${formatEur(totVendite)}</div><div class="metric-sub">Tutti i mesi</div></div>`;
   document.getElementById('smallGrid').innerHTML=`
-<div class="metric-card costi visible"><div class="metric-label">Costi Fissi</div><div class="metric-value rosso">${formatEur(totaleCosti)}</div><div class="metric-sub">/mese</div></div>
-<div class="metric-card arancio visible"><div class="metric-label">Break-Even</div><div class="metric-value arancio">${formatEur(breakEven)}</div><div class="metric-sub">Vendite minime/mese</div></div>
-<div class="metric-card ${netto>=0?'netto-pos':'netto-neg'} visible"><div class="metric-label">Flusso Netto</div><div class="metric-value ${nettoClass}">${formatEur(netto)}</div><div class="metric-sub">Incassi – Costi</div></div>
-<div class="metric-card arancio visible"><div class="metric-label">Margine Lordo</div><div class="metric-value arancio">${formatEur(margine)}</div><div class="metric-sub">66.7% su vendite</div></div>`;
+<div class="metric-card dark visible"><div class="metric-label">Costi Fissi</div><div class="metric-value scuro">${formatEur(totaleCosti)}</div><div class="metric-sub">/mese</div></div>
+<div class="metric-card visible"><div class="metric-label">Break-Even</div><div class="metric-value">${formatEur(breakEven)}</div><div class="metric-sub">Vendite minime/mese</div></div>
+<div class="metric-card accent visible"><div class="metric-label">Flusso Netto</div><div class="metric-value celeste">${formatEur(netto)}</div><div class="metric-sub">Incassi – Costi</div></div>
+<div class="metric-card visible"><div class="metric-label">Margine Lordo</div><div class="metric-value">${formatEur(margine)}</div><div class="metric-sub">66.7% su vendite</div></div>`;
 }
-  async function loadAll(){
+
+async function loadAll(){
   const dot=document.getElementById('statusDot');
   const statusText=document.getElementById('statusText');
   const lastUpdate=document.getElementById('lastUpdate');
