@@ -19,7 +19,8 @@ header{text-align:center;margin-bottom:40px}
 .dot.ok{background:var(--verde);animation:none}
 .dot.error{background:var(--rosso);animation:none}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.metrics-grid-2{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
 .metric-card{background:var(--bianco);border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);text-align:center;opacity:0;transform:translateY(12px);transition:all 0.4s ease}
 .metric-card.visible{opacity:1;transform:translateY(0)}
 .metric-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.09);transform:translateY(-3px)}
@@ -27,10 +28,12 @@ header{text-align:center;margin-bottom:40px}
 .metric-card.netto-pos{border-top:3px solid var(--verde)}
 .metric-card.netto-neg{border-top:3px solid var(--rosso)}
 .metric-card.celeste{border-top:3px solid var(--celeste-dark)}
+.metric-card.arancio{border-top:3px solid #f39c12}
 .metric-label{font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--grigio-medio);margin-bottom:8px}
 .metric-value{font-family:'DM Serif Display',serif;font-size:1.7rem;color:var(--grigio);line-height:1}
 .metric-value.verde{color:var(--verde)}
 .metric-value.rosso{color:var(--rosso)}
+.metric-value.arancio{color:#f39c12}
 .metric-sub{font-size:0.7rem;color:var(--grigio-medio);margin-top:6px}
 .section{background:var(--bianco);border-radius:10px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:20px;opacity:0;transform:translateY(12px);transition:all 0.5s ease}
 .section.visible{opacity:1;transform:translateY(0)}
@@ -57,7 +60,7 @@ tr:hover{background:#fafafa}
 footer{text-align:center;font-size:0.72rem;color:var(--grigio-medio);margin-top:36px}
 .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:4px;height:18px;margin:6px 0}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-@media(max-width:700px){.metrics-grid{grid-template-columns:1fr 1fr}.metric-value{font-size:1.4rem}.logo{font-size:2rem}}
+@media(max-width:700px){.metrics-grid,.metrics-grid-2{grid-template-columns:1fr 1fr}.metric-value{font-size:1.4rem}.logo{font-size:2rem}}
 </style>
 </head>
 <body>
@@ -74,9 +77,13 @@ footer{text-align:center;font-size:0.72rem;color:var(--grigio-medio);margin-top:
 <button class="refresh-btn" onclick="loadAll()">↻ Aggiorna</button>
 <div class="metrics-grid" id="metricsGrid">
 <div class="metric-card costi visible"><div class="metric-label">Costi Fissi/Mese</div><div class="skeleton"></div></div>
+<div class="metric-card arancio visible"><div class="metric-label">Break-Even (×3)</div><div class="skeleton"></div></div>
 <div class="metric-card netto-pos visible"><div class="metric-label">Flusso Netto</div><div class="skeleton"></div></div>
+</div>
+<div class="metrics-grid-2" id="metricsGrid2">
 <div class="metric-card celeste visible"><div class="metric-label">Skinem</div><div class="skeleton"></div></div>
 <div class="metric-card celeste visible"><div class="metric-label">SkinNate</div><div class="skeleton"></div></div>
+<div class="metric-card celeste visible"><div class="metric-label">Totale Vendite</div><div class="skeleton"></div></div>
 </div>
 <div class="section" id="costiSection">
 <div class="section-title">Costi Fissi Mensili</div>
@@ -96,12 +103,10 @@ function parseGSheet(text){const s=text.indexOf('{');const e=text.lastIndexOf('}
 function parseDate(val){
   if(!val)return null;
   if(typeof val==='number')return new Date((val-25569)*86400*1000);
-  if(typeof val==='object'&&val.v)return parseDate(val.v);
   if(typeof val==='string'){
     const p=val.split('/');
     if(p.length===3)return new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));
-    const d=new Date(val);
-    if(!isNaN(d))return d;
+    const d=new Date(val);if(!isNaN(d))return d;
   }
   return null;
 }
@@ -112,8 +117,7 @@ async function loadAll(){
 const dot=document.getElementById('statusDot');
 const statusText=document.getElementById('statusText');
 const lastUpdate=document.getElementById('lastUpdate');
-dot.className='dot';
-statusText.textContent='Caricamento dati...';
+dot.className='dot';statusText.textContent='Caricamento dati...';
 try{
 const[costiData,venditeData]=await Promise.all([
 fetchSheet(COSTI_ID,'Foglio1'),
@@ -124,11 +128,10 @@ for(const row of costiData.table.rows){
 const nome=row.c[0]?.v;const val=parseFloat(row.c[1]?.v)||0;
 if(nome&&val>0){costi.push({nome:String(nome),importo:val});totaleCosti+=val}
 }
+const breakEven=totaleCosti*3;
 const settimane={};let totSkinem=0,totSkinnate=0;
 for(const row of venditeData.table.rows){
-const rawDate=row.c[0];
-const skinem=parseFloat(row.c[1]?.v)||0;
-const skinnate=parseFloat(row.c[2]?.v)||0;
+const rawDate=row.c[0];const skinem=parseFloat(row.c[1]?.v)||0;const skinnate=parseFloat(row.c[2]?.v)||0;
 if(!rawDate)continue;
 const dateVal=rawDate.v!==undefined?rawDate.v:rawDate;
 const date=parseDate(dateVal);
@@ -147,9 +150,12 @@ statusText.textContent=`${costi.length} costi · ${nSettimane} settimane vendite
 lastUpdate.textContent=`Aggiornato: ${new Date().toLocaleString('it-IT')}`;
 document.getElementById('metricsGrid').innerHTML=`
 <div class="metric-card costi visible"><div class="metric-label">Costi Fissi/Mese</div><div class="metric-value rosso">${formatEur(totaleCosti)}</div><div class="metric-sub">${costi.length} voci</div></div>
-<div class="metric-card ${netto>=0?'netto-pos':'netto-neg'} visible"><div class="metric-label">Flusso Netto</div><div class="metric-value ${nettoClass}">${formatEur(netto)}</div><div class="metric-sub">Incassi – Costi</div></div>
+<div class="metric-card arancio visible"><div class="metric-label">Break-Even (×3)</div><div class="metric-value arancio">${formatEur(breakEven)}</div><div class="metric-sub">Target minimo vendite</div></div>
+<div class="metric-card ${netto>=0?'netto-pos':'netto-neg'} visible"><div class="metric-label">Flusso Netto</div><div class="metric-value ${nettoClass}">${formatEur(netto)}</div><div class="metric-sub">Vendite – Costi</div></div>`;
+document.getElementById('metricsGrid2').innerHTML=`
 <div class="metric-card celeste visible"><div class="metric-label">Skinem</div><div class="metric-value">${formatEur(totSkinem)}</div><div class="metric-sub">Ingrosso</div></div>
-<div class="metric-card celeste visible"><div class="metric-label">SkinNate</div><div class="metric-value">${formatEur(totSkinnate)}</div><div class="metric-sub">Retail</div></div>`;
+<div class="metric-card celeste visible"><div class="metric-label">SkinNate</div><div class="metric-value">${formatEur(totSkinnate)}</div><div class="metric-sub">Retail</div></div>
+<div class="metric-card celeste visible"><div class="metric-label">Totale Vendite</div><div class="metric-value">${formatEur(totVendite)}</div><div class="metric-sub">${nSettimane} settimane</div></div>`;
 const maxCosto=Math.max(...costi.map(c=>c.importo));
 let costiHtml='';
 costi.forEach(c=>{const perc=Math.round((c.importo/maxCosto)*100);costiHtml+=`<div class="cost-row"><div><div class="cost-name">${c.nome}</div><div class="cost-bar" style="width:${perc}%"></div></div><div class="cost-amount">${formatEur(c.importo)}</div></div>`});
@@ -164,7 +170,7 @@ tableHtml+=`<tr><td>${s.label}</td><td><span class="amount">${formatEur(s.skinem
 tableHtml+=`</tbody></table>`;
 document.getElementById('venditeTable').innerHTML=tableHtml;
 }else{
-document.getElementById('venditeTable').innerHTML='<p style="color:#888;font-size:0.9rem">Nessuna vendita inserita ancora</p>';
+document.getElementById('venditeTable').innerHTML='<p style="color:#888;font-size:0.9rem;text-align:center;padding:20px">Nessuna vendita inserita ancora</p>';
 }
 setTimeout(()=>{document.querySelectorAll('.metric-card,.section').forEach((el,i)=>{setTimeout(()=>el.classList.add('visible'),i*80)})},100);
 }catch(err){
