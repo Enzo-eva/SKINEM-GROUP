@@ -177,10 +177,10 @@ async function loadAll(){
           const skinnate=parseFloat(row.c[2]?.v)||0;
           if(cliente&&(skinem>0||skinnate>0))righe.push({cliente:String(cliente),skinem,skinnate});
         }
-        datiVendite[mese]=righe;
-        mesiDisponibili.push(mese);
-      }catch(e){}
-    }
+    if(righe.length>0){
+  datiVendite[mese]=righe;
+  mesiDisponibili.push(mese);
+}
     const tabsHtml=mesiDisponibili.map(m=>`<button class="mese-tab${m===meseAttivo?' active':''}" data-mese="${m}" onclick="renderMese('${m}')">${m}</button>`).join('');
     document.getElementById('meseTabs').innerHTML=tabsHtml;
     aggiornaMetriche();
