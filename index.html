@@ -93,7 +93,18 @@ const COSTI_ID='1fjh4ZT7SxtPn0D3ojJ1DptWR2IsYc4Y9kECUgFwzYCQ';
 const VENDITE_ID='19011LKl-DC3sQTITIigeKGadrl1HhZJPyioWYBoeDEI';
 function formatEur(n){return'€ '+n.toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:0})}
 function parseGSheet(text){const s=text.indexOf('{');const e=text.lastIndexOf('}');return JSON.parse(text.substring(s,e+1))}
-function parseDate(val){if(!val)return null;if(typeof val==='number')return new Date((val-25569)*86400*1000);if(typeof val==='string')return new Date(val);return null}
+function parseDate(val){
+  if(!val)return null;
+  if(typeof val==='number')return new Date((val-25569)*86400*1000);
+  if(typeof val==='object'&&val.v)return parseDate(val.v);
+  if(typeof val==='string'){
+    const p=val.split('/');
+    if(p.length===3)return new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));
+    const d=new Date(val);
+    if(!isNaN(d))return d;
+  }
+  return null;
+}
 function getWeekKey(date){const d=new Date(date);d.setDate(d.getDate()-d.getDay()+1);return d.toISOString().split('T')[0]}
 function getWeekLabel(date){const start=new Date(date);start.setDate(date.getDate()-date.getDay()+1);const end=new Date(start);end.setDate(start.getDate()+6);const fmt=x=>x.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});return`${fmt(start)} – ${fmt(end)}`}
 async function fetchSheet(id,sheet){const url=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;const res=await fetch(url);const text=await res.text();return parseGSheet(text)}
@@ -115,8 +126,13 @@ if(nome&&val>0){costi.push({nome:String(nome),importo:val});totaleCosti+=val}
 }
 const settimane={};let totSkinem=0,totSkinnate=0;
 for(const row of venditeData.table.rows){
-const dateVal=row.c[0]?.v;const skinem=parseFloat(row.c[1]?.v)||0;const skinnate=parseFloat(row.c[2]?.v)||0;
-if(!dateVal)continue;const date=parseDate(dateVal);if(!date)continue;
+const rawDate=row.c[0];
+const skinem=parseFloat(row.c[1]?.v)||0;
+const skinnate=parseFloat(row.c[2]?.v)||0;
+if(!rawDate)continue;
+const dateVal=rawDate.v!==undefined?rawDate.v:rawDate;
+const date=parseDate(dateVal);
+if(!date||isNaN(date.getTime()))continue;
 const key=getWeekKey(date);
 if(!settimane[key])settimane[key]={label:getWeekLabel(date),skinem:0,skinnate:0};
 settimane[key].skinem+=skinem;settimane[key].skinnate+=skinnate;
@@ -139,6 +155,7 @@ let costiHtml='';
 costi.forEach(c=>{const perc=Math.round((c.importo/maxCosto)*100);costiHtml+=`<div class="cost-row"><div><div class="cost-name">${c.nome}</div><div class="cost-bar" style="width:${perc}%"></div></div><div class="cost-amount">${formatEur(c.importo)}</div></div>`});
 costiHtml+=`<div class="cost-total-row"><span>Totale mensile</span><span>${formatEur(totaleCosti)}</span></div>`;
 document.getElementById('costiList').innerHTML=costiHtml;
+if(nSettimane>0){
 const maxTot=Math.max(...Object.values(settimane).map(s=>s.skinem+s.skinnate));
 let tableHtml=`<table><thead><tr><th>Settimana</th><th>Skinem</th><th>SkinNate</th><th>Totale</th></tr></thead><tbody>`;
 Object.entries(settimane).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([k,s])=>{
@@ -146,6 +163,9 @@ const tot=s.skinem+s.skinnate;const perc=Math.round((tot/maxTot)*100);
 tableHtml+=`<tr><td>${s.label}</td><td><span class="amount">${formatEur(s.skinem)}</span></td><td><span class="amount">${formatEur(s.skinnate)}</span></td><td><div class="bar-wrap"><span class="amount verde">${formatEur(tot)}</span><div class="bar"><div class="bar-fill" style="width:${perc}%"></div></div></div></td></tr>`});
 tableHtml+=`</tbody></table>`;
 document.getElementById('venditeTable').innerHTML=tableHtml;
+}else{
+document.getElementById('venditeTable').innerHTML='<p style="color:#888;font-size:0.9rem">Nessuna vendita inserita ancora</p>';
+}
 setTimeout(()=>{document.querySelectorAll('.metric-card,.section').forEach((el,i)=>{setTimeout(()=>el.classList.add('visible'),i*80)})},100);
 }catch(err){
 dot.className='dot error';
