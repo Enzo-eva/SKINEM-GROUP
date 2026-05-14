@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skinem Group – Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--celeste:#b8dde8;--celeste-dark:#7fb3cc;--grigio:#4a4a4a;--grigio-medio:#888;--bg:#f2f7fa;--bianco:#ffffff;--verde:#27ae60;--rosso:#e74c3c}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--grigio);min-height:100vh;padding:32px 20px}
+.container{max-width:960px;margin:0 auto}
+header{text-align:center;margin-bottom:40px}
+.logo{font-family:'DM Serif Display',serif;font-size:2.8rem;color:var(--grigio);letter-spacing:-1px;margin-bottom:4px}
+.tagline{font-size:0.78rem;font-weight:600;color:var(--celeste-dark);letter-spacing:2.5px;text-transform:uppercase}
+.last-update{font-size:0.78rem;color:var(--grigio-medio);margin-top:8px}
+.status-bar{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:28px;font-size:0.85rem;color:var(--grigio-medio)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--celeste-dark);animation:pulse 2s infinite}
+.dot.ok{background:var(--verde);animation:none}
+.dot.error{background:var(--rosso);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.metric-card{background:var(--bianco);border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);text-align:center;opacity:0;transform:translateY(12px);transition:all 0.4s ease}
+.metric-card.visible{opacity:1;transform:translateY(0)}
+.metric-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.09);transform:translateY(-3px)}
+.metric-card.costi{border-top:3px solid var(--rosso)}
+.metric-card.netto-pos{border-top:3px solid var(--verde)}
+.metric-card.netto-neg{border-top:3px solid var(--rosso)}
+.metric-card.celeste{border-top:3px solid var(--celeste-dark)}
+.metric-label{font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--grigio-medio);margin-bottom:8px}
+.metric-value{font-family:'DM Serif Display',serif;font-size:1.7rem;color:var(--grigio);line-height:1}
+.metric-value.verde{color:var(--verde)}
+.metric-value.rosso{color:var(--rosso)}
+.metric-sub{font-size:0.7rem;color:var(--grigio-medio);margin-top:6px}
+.section{background:var(--bianco);border-radius:10px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:20px;opacity:0;transform:translateY(12px);transition:all 0.5s ease}
+.section.visible{opacity:1;transform:translateY(0)}
+.section-title{font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--celeste-dark);margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--celeste)}
+.cost-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5;font-size:0.9rem}
+.cost-row:last-child{border-bottom:none}
+.cost-name{color:var(--grigio-medio)}
+.cost-amount{font-weight:600}
+.cost-bar{height:3px;background:var(--celeste);border-radius:2px;margin-top:3px}
+.cost-total-row{display:flex;justify-content:space-between;padding:14px 0 0 0;margin-top:8px;border-top:2px solid var(--grigio);font-weight:600;font-size:1rem}
+table{width:100%;border-collapse:collapse;font-size:0.88rem}
+thead tr{background:#f8f9fa}
+th{padding:10px 12px;text-align:left;font-weight:600;font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--grigio-medio);border-bottom:1px solid #eee}
+td{padding:11px 12px;border-bottom:1px solid #f5f5f5}
+tr:last-child td{border-bottom:none}
+tr:hover{background:#fafafa}
+.amount{font-weight:600;color:var(--grigio)}
+.amount.verde{color:var(--verde)}
+.bar-wrap{display:flex;align-items:center;gap:8px}
+.bar{height:4px;border-radius:2px;flex:1;background:#f0f0f0;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;background:var(--celeste-dark)}
+.refresh-btn{display:block;margin:0 auto 28px auto;padding:9px 22px;background:var(--grigio);color:white;border:none;border-radius:6px;font-size:0.85rem;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;transition:all 0.2s ease}
+.refresh-btn:hover{background:#2a2a2a;transform:translateY(-2px)}
+footer{text-align:center;font-size:0.72rem;color:var(--grigio-medio);margin-top:36px}
+.skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:4px;height:18px;margin:6px 0}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@media(max-width:700px){.metrics-grid{grid-template-columns:1fr 1fr}.metric-value{font-size:1.4rem}.logo{font-size:2rem}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<div class="logo">Skinem Group</div>
+<div class="tagline">Dashboard · Costi & Vendite</div>
+<div class="last-update" id="lastUpdate">Caricamento...</div>
+</header>
+<div class="status-bar">
+<div class="dot" id="statusDot"></div>
+<span id="statusText">Connessione ai fogli...</span>
+</div>
+<button class="refresh-btn" onclick="loadAll()">↻ Aggiorna</button>
+<div class="metrics-grid" id="metricsGrid">
+<div class="metric-card costi visible"><div class="metric-label">Costi Fissi/Mese</div><div class="skeleton"></div></div>
+<div class="metric-card netto-pos visible"><div class="metric-label">Flusso Netto</div><div class="skeleton"></div></div>
+<div class="metric-card celeste visible"><div class="metric-label">Skinem</div><div class="skeleton"></div></div>
+<div class="metric-card celeste visible"><div class="metric-label">SkinNate</div><div class="skeleton"></div></div>
+</div>
+<div class="section" id="costiSection">
+<div class="section-title">Costi Fissi Mensili</div>
+<div id="costiList"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+</div>
+<div class="section" id="venditeSection">
+<div class="section-title">Vendite per Settimana</div>
+<div id="venditeTable"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+</div>
+<footer>Skinem Group · Auto-refresh ogni 5 min</footer>
+</div>
+<script>
+const COSTI_ID='1fjh4ZT7SxtPn0D3ojJ1DptWR2IsYc4Y9kECUgFwzYCQ';
+const VENDITE_ID='19011LKl-DC3sQTITIigeKGadrl1HhZJPyioWYBoeDEI';
+function formatEur(n){return'€ '+n.toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:0})}
+function parseGSheet(text){const s=text.indexOf('{');const e=text.lastIndexOf('}');return JSON.parse(text.substring(s,e+1))}
+function parseDate(val){if(!val)return null;if(typeof val==='number')return new Date((val-25569)*86400*1000);if(typeof val==='string')return new Date(val);return null}
+function getWeekKey(date){const d=new Date(date);d.setDate(d.getDate()-d.getDay()+1);return d.toISOString().split('T')[0]}
+function getWeekLabel(date){const start=new Date(date);start.setDate(date.getDate()-date.getDay()+1);const end=new Date(start);end.setDate(start.getDate()+6);const fmt=x=>x.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});return`${fmt(start)} – ${fmt(end)}`}
+async function fetchSheet(id,sheet){const url=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;const res=await fetch(url);const text=await res.text();return parseGSheet(text)}
+async function loadAll(){
+const dot=document.getElementById('statusDot');
+const statusText=document.getElementById('statusText');
+const lastUpdate=document.getElementById('lastUpdate');
+dot.className='dot';
+statusText.textContent='Caricamento dati...';
+try{
+const[costiData,venditeData]=await Promise.all([
+fetchSheet(COSTI_ID,'Foglio1'),
+fetchSheet(VENDITE_ID,'Foglio1')
+]);
+const costi=[];let totaleCosti=0;
+for(const row of costiData.table.rows){
+const nome=row.c[0]?.v;const val=parseFloat(row.c[1]?.v)||0;
+if(nome&&val>0){costi.push({nome:String(nome),importo:val});totaleCosti+=val}
+}
+const settimane={};let totSkinem=0,totSkinnate=0;
+for(const row of venditeData.table.rows){
+const dateVal=row.c[0]?.v;const skinem=parseFloat(row.c[1]?.v)||0;const skinnate=parseFloat(row.c[2]?.v)||0;
+if(!dateVal)continue;const date=parseDate(dateVal);if(!date)continue;
+const key=getWeekKey(date);
+if(!settimane[key])settimane[key]={label:getWeekLabel(date),skinem:0,skinnate:0};
+settimane[key].skinem+=skinem;settimane[key].skinnate+=skinnate;
+totSkinem+=skinem;totSkinnate+=skinnate;
+}
+const totVendite=totSkinem+totSkinnate;
+const netto=totVendite-totaleCosti;
+const nettoClass=netto>=0?'verde':'rosso';
+const nSettimane=Object.keys(settimane).length;
+dot.className='dot ok';
+statusText.textContent=`${costi.length} costi · ${nSettimane} settimane vendite`;
+lastUpdate.textContent=`Aggiornato: ${new Date().toLocaleString('it-IT')}`;
+document.getElementById('metricsGrid').innerHTML=`
+<div class="metric-card costi visible"><div class="metric-label">Costi Fissi/Mese</div><div class="metric-value rosso">${formatEur(totaleCosti)}</div><div class="metric-sub">${costi.length} voci</div></div>
+<div class="metric-card ${netto>=0?'netto-pos':'netto-neg'} visible"><div class="metric-label">Flusso Netto</div><div class="metric-value ${nettoClass}">${formatEur(netto)}</div><div class="metric-sub">Incassi – Costi</div></div>
+<div class="metric-card celeste visible"><div class="metric-label">Skinem</div><div class="metric-value">${formatEur(totSkinem)}</div><div class="metric-sub">Ingrosso</div></div>
+<div class="metric-card celeste visible"><div class="metric-label">SkinNate</div><div class="metric-value">${formatEur(totSkinnate)}</div><div class="metric-sub">Retail</div></div>`;
+const maxCosto=Math.max(...costi.map(c=>c.importo));
+let costiHtml='';
+costi.forEach(c=>{const perc=Math.round((c.importo/maxCosto)*100);costiHtml+=`<div class="cost-row"><div><div class="cost-name">${c.nome}</div><div class="cost-bar" style="width:${perc}%"></div></div><div class="cost-amount">${formatEur(c.importo)}</div></div>`});
+costiHtml+=`<div class="cost-total-row"><span>Totale mensile</span><span>${formatEur(totaleCosti)}</span></div>`;
+document.getElementById('costiList').innerHTML=costiHtml;
+const maxTot=Math.max(...Object.values(settimane).map(s=>s.skinem+s.skinnate));
+let tableHtml=`<table><thead><tr><th>Settimana</th><th>Skinem</th><th>SkinNate</th><th>Totale</th></tr></thead><tbody>`;
+Object.entries(settimane).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([k,s])=>{
+const tot=s.skinem+s.skinnate;const perc=Math.round((tot/maxTot)*100);
+tableHtml+=`<tr><td>${s.label}</td><td><span class="amount">${formatEur(s.skinem)}</span></td><td><span class="amount">${formatEur(s.skinnate)}</span></td><td><div class="bar-wrap"><span class="amount verde">${formatEur(tot)}</span><div class="bar"><div class="bar-fill" style="width:${perc}%"></div></div></div></td></tr>`});
+tableHtml+=`</tbody></table>`;
+document.getElementById('venditeTable').innerHTML=tableHtml;
+setTimeout(()=>{document.querySelectorAll('.metric-card,.section').forEach((el,i)=>{setTimeout(()=>el.classList.add('visible'),i*80)})},100);
+}catch(err){
+dot.className='dot error';
+statusText.textContent='Errore – fogli non pubblici o nome foglio errato';
+lastUpdate.textContent='';
+console.error(err);
+}}
+loadAll();
+setInterval(loadAll,5*60*1000);
+</script>
+</body>
+</html>
