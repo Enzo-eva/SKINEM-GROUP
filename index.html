@@ -107,12 +107,12 @@ async function getFogliReali(id){
   const res=await fetch(url);
   const text=await res.text();
   const nomi=[];
-  const regex=/"sheetName":"([^"]+)"/g;
+  const regex=/"label":"([^"]+)"/g;
   let m;
   while((m=regex.exec(text))!==null){
-    if(MESI.includes(m[1]))nomi.push(m[1]);
+if(MESI.includes(m[1])&&!nomi.includes(m[1]))nomi.push(m[1]);
   }
-  return [...new Set(nomi)];
+return nomi.slice(0,2);
 }
 
 async function fetchSheet(id,sheet){
